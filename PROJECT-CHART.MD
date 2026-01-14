@@ -12,8 +12,8 @@ Build a minimal but production-grade B2B SaaS that customers can pay for. The MV
 
 The product must be operational on Yandex Cloud VPS and use:
 	•	Supabase: DB, Object Storage, Auth
-	•	Yandex SpeechKit: transcription
-	•	OpenAI API: LLM-based analysis
+	•	Yandex SpeechKit v3 (gRPC, async): transcription
+	•	OpenAI Agents SDK: LLM-based analysis
 
 2. MVP Success Criteria
 
@@ -43,7 +43,7 @@ Processing pipeline
 	•	Job orchestration for processing stages:
 	•	(Optional) video → audio extraction (ffmpeg)
 	•	transcription via SpeechKit (if audio/video)
-	•	LLM analysis via OpenAI (from transcript)
+	•	LLM analysis via OpenAI Agents SDK (from transcript)
 	•	Persist artifacts and results in Supabase DB/Storage.
 	•	Idempotent processing + retries.
 
@@ -172,7 +172,7 @@ A task is “done” only if:
 	•	No “mega-PRs” spanning multiple screens and backend changes unless explicitly approved.
 
 8.3 External APIs Testing Policy
-	•	No real SpeechKit/OpenAI calls in unit tests.
+	•	No real SpeechKit v3/OpenAI Agents SDK calls in unit tests.
 	•	Implement thin adapters and mock them in tests.
 	•	Optional: separate manual “smoke test” script for real API calls.
 
@@ -204,14 +204,14 @@ Mitigation: separate Supabase projects, secrets, queues, and domains.
 
 9.5 Cost Blowups
 
-Risk: large files and retries increase SpeechKit/OpenAI costs.
+Risk: large files and retries increase SpeechKit v3/OpenAI Agents SDK costs.
 Mitigation: file limits, quotas per org, per-stage retry caps, visibility in admin.
 
 10. Milestones (Suggested)
 	•	M1 — Foundation: repo + CI/CD + Supabase schema + Auth + RLS.
 	•	M2 — Upload & Status: upload flow + job tracking + worker skeleton.
 	•	M3 — Processing v1: ffmpeg (if needed) + SpeechKit integration + artifact storage.
-	•	M4 — Analysis v1: OpenAI analysis + result persistence + UI display.
+	•	M4 — Analysis v1: OpenAI Agents SDK analysis + result persistence + UI display.
 	•	M5 — Hardening: retries, limits, observability, admin tools, staging/prod parity.
 
 11. Decision Log (To Be Maintained)
