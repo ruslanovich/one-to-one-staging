@@ -2,6 +2,7 @@ import {
   AbortMultipartUploadCommand,
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
+  ListPartsCommand,
   S3Client,
   UploadPartCommand,
 } from "@aws-sdk/client-s3";
@@ -62,6 +63,27 @@ export async function completeMultipartUpload(
       },
     }),
   );
+}
+
+export async function listMultipartUploadParts(
+  client: S3Client,
+  input: { bucket: string; key: string; uploadId: string },
+): Promise<Array<{ partNumber: number; etag: string }>> {
+  const result = await client.send(
+    new ListPartsCommand({
+      Bucket: input.bucket,
+      Key: input.key,
+      UploadId: input.uploadId,
+    }),
+  );
+
+  const parts = result.Parts ?? [];
+  return parts
+    .map((part) => ({
+      partNumber: part.PartNumber ?? 0,
+      etag: part.ETag ?? "",
+    }))
+    .filter((part) => part.partNumber > 0 && part.etag.length > 0);
 }
 
 export async function abortMultipartUpload(

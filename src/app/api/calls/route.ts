@@ -3,14 +3,28 @@ import { createPgPool } from "@/db/pgClient";
 import { PostgresJobQueue } from "@/queue/postgresQueue";
 import { enqueueProcessingStages } from "@/api/jobs";
 import { requireEnv } from "@/config/env";
+import { validateUploadInput } from "@/shared/uploadTypes";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
-  const { orgId, createdBy, fileName } = body ?? {};
+  const { orgId, createdBy, fileName, sourceFileName, uploadKind, contentType } =
+    body ?? {};
 
   if (!orgId || !fileName) {
     return NextResponse.json(
       { error: "orgId and fileName are required" },
+      { status: 400 },
+    );
+  }
+
+  const validation = validateUploadInput({
+    fileName,
+    sourceFileName,
+    sourceKind: uploadKind,
+  });
+  if (!validation.ok) {
+    return NextResponse.json(
+      { error: "unsupported upload file type", details: validation.errors },
       { status: 400 },
     );
   }
@@ -23,7 +37,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       `insert into calls (org_id, created_by, status, source_filename, upload_status, upload_progress)
        values ($1, $2, 'queued', $3, 'pending', 0)
        returning id`,
-      [orgId, createdBy ?? null, fileName],
+      [orgId, createdBy ?? null, sourceFileName ?? fileName],
     );
 
     const callId = result.rows[0]?.id;
@@ -32,7 +46,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     const queue = new PostgresJobQueue(pool);
-    await enqueueProcessingStages(queue, { orgId, callId, fileName });
+    await enqueueProcessingStages(queue, {
+      orgId,
+      callId,
+      fileName,
+      contentType: contentType ?? null,
+    });
 
     return NextResponse.json({ callId });
   } finally {

@@ -37,8 +37,8 @@ async function main(): Promise<void> {
       `orgs/${o}/calls/${c}/artifacts/transcript/${c}.json`,
     transcriptAudioPath: (o: string, c: string) =>
       `orgs/${o}/calls/${c}/artifacts/transcript/${c}.ogg`,
-    analysisPath: (o: string, c: string) =>
-      `orgs/${o}/calls/${c}/artifacts/analysis/${c}.json`,
+    analysisPath: (o: string, c: string, analysisId?: string) =>
+      `orgs/${o}/calls/${c}/artifacts/analysis/${analysisId ?? c}.json`,
     enqueueJobAt: queue.enqueueAt?.bind(queue),
     enqueueJob: queue.enqueue.bind(queue),
     onAudioArtifact: async () => {},

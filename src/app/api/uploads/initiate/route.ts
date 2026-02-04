@@ -4,14 +4,28 @@ import { createS3Client } from "@/storage/s3SignedUrl";
 import { createMultipartUpload } from "@/storage/s3Multipart";
 import { buildRawObjectKey } from "@/api/uploadUrl";
 import { requireEnv } from "@/config/env";
+import { validateUploadInput } from "@/shared/uploadTypes";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
-  const { orgId, callId, fileName, contentType, createdBy } = body ?? {};
+  const { orgId, callId, fileName, contentType, createdBy, sourceFileName, uploadKind } =
+    body ?? {};
 
   if (!orgId || !callId || !fileName) {
     return NextResponse.json(
       { error: "orgId, callId, and fileName are required" },
+      { status: 400 },
+    );
+  }
+
+  const validation = validateUploadInput({
+    fileName,
+    sourceFileName,
+    sourceKind: uploadKind,
+  });
+  if (!validation.ok) {
+    return NextResponse.json(
+      { error: "unsupported upload file type", details: validation.errors },
       { status: 400 },
     );
   }
@@ -26,7 +40,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
              upload_progress = 0,
              upload_mime = excluded.upload_mime,
              upload_updated_at = now()`,
-      [callId, orgId, createdBy ?? null, fileName, contentType ?? null],
+      [callId, orgId, createdBy ?? null, sourceFileName ?? fileName, contentType ?? null],
     );
 
     const client = createS3Client({

@@ -1,0 +1,133 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text-900);
+  background: #fff;
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+}
+
+.login-panel {
+  width: min(520px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  color: var(--color-blue-600);
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 4px;
+}
+
+.login-form {
+  width: min(480px, 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.login-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-100);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+
+.login-field:focus-within {
+  border-color: var(--color-blue-500);
+  box-shadow: 0 0 0 3px rgba(22, 119, 230, 0.12);
+}
+
+.login-field-label {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-600);
+  min-width: 70px;
+}
+
+.login-field input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--color-text-900);
+  background: transparent;
+}
+
+.login-field input::placeholder {
+  color: #9aa4b2;
+}
+
+.login-eye {
+  border: none;
+  background: transparent;
+  color: #9aa4b2;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.login-eye svg {
+  width: 18px;
+  height: 18px;
+}
+
+.login-link {
+  font-size: 13px;
+  color: var(--color-blue-600);
+  text-decoration: none;
+  justify-self: start;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+.login-button {
+  border: none;
+  width: 100%;
+  background: var(--color-blue-600);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-button:hover {
+  background: var(--color-blue-500);
+  box-shadow: 0 10px 20px rgba(22, 119, 230, 0.2);
+}
+
+.login-button:active {
+  background: var(--color-blue-700);
+}
+
+.login-status {
+  color: var(--color-text-600);
+  font-size: 12px;
+  text-align: center;
+}

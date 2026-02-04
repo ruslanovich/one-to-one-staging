@@ -4,14 +4,36 @@ import { createPgPool } from "@/db/pgClient";
 import { PostgresJobQueue } from "@/queue/postgresQueue";
 import { enqueueProcessingStages } from "@/api/jobs";
 import { requireEnv } from "@/config/env";
+import { validateUploadInput } from "@/shared/uploadTypes";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
-  const { orgId, callId, fileName, contentType, expiresInSeconds, createdBy } = body ?? {};
+  const {
+    orgId,
+    callId,
+    fileName,
+    contentType,
+    expiresInSeconds,
+    createdBy,
+    sourceFileName,
+    uploadKind,
+  } = body ?? {};
 
   if (!orgId || !callId || !fileName) {
     return NextResponse.json(
       { error: "orgId, callId, and fileName are required" },
+      { status: 400 },
+    );
+  }
+
+  const validation = validateUploadInput({
+    fileName,
+    sourceFileName,
+    sourceKind: uploadKind,
+  });
+  if (!validation.ok) {
+    return NextResponse.json(
+      { error: "unsupported upload file type", details: validation.errors },
       { status: 400 },
     );
   }
@@ -24,7 +46,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       `insert into calls (id, org_id, created_by, status, source_filename, upload_status, upload_progress)
        values ($1, $2, $3, 'queued', $4, 'uploading', 0)
        returning id`,
-      [callId, orgId, createdBy ?? null, fileName],
+      [callId, orgId, createdBy ?? null, sourceFileName ?? fileName],
     );
 
     const createdCallId = insertResult.rows[0]?.id;
@@ -33,7 +55,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     const queue = new PostgresJobQueue(pool);
-    await enqueueProcessingStages(queue, { orgId, callId: createdCallId, fileName });
+    await enqueueProcessingStages(queue, {
+      orgId,
+      callId: createdCallId,
+      fileName,
+      contentType: contentType ?? null,
+    });
 
     const result = await generateUploadUrl(
       { orgId, callId: createdCallId, fileName, contentType, expiresInSeconds },

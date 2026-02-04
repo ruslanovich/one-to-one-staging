@@ -1,4 +1,9 @@
-export type JobStage = "extract_audio" | "transcribe_start" | "transcribe_poll" | "analyze";
+export type JobStage =
+  | "extract_audio"
+  | "transcribe_start"
+  | "transcribe_poll"
+  | "analyze"
+  | "persist_analysis";
 export type JobStatus = "queued" | "processing" | "done" | "failed";
 
 export interface QueueJob {

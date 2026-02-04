@@ -1,0 +1,87 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
+
+:root {
+  /* Typography */
+  --font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --font-size-32: 32px;
+  --font-size-20: 20px;
+  --font-size-16: 16px;
+  --font-size-14: 14px;
+  --font-size-12: 12px;
+  --font-size-10: 10px;
+
+  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+
+  /* Spacing scale */
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-200: 200px;
+
+  /* Radii */
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-pill: 999px;
+
+  /* Border widths */
+  --border-1: 1px;
+
+  /* Colors (approx from PNG) */
+  --color-blue-700: #0f67d5;
+  --color-blue-600: #1677e6;
+  --color-blue-500: #2e8bff;
+  --color-blue-100: #e7f1ff;
+  --color-blue-050: #f3f8ff;
+
+  --color-text-900: #1d1d1f;
+  --color-text-600: #7b8794;
+  --color-text-500: #8f9bb3;
+
+  --color-border-200: #d6e6ff;
+  --color-border-100: #edf2f7;
+
+  --color-bg: #ffffff;
+  --color-bg-muted: #f7f9fc;
+
+  --color-success-600: #17a65b;
+  --color-success-100: #ddf3e7;
+  --color-warning-600: #e84c4c;
+  --color-warning-100: #fbe0e0;
+  --color-info-600: #4a7bd0;
+  --color-info-100: #e1f0ff;
+
+  /* Shadows */
+  --shadow-soft: 0 8px 24px rgba(18, 32, 57, 0.12);
+  --shadow-toast: 0 18px 40px rgba(11, 42, 85, 0.25);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --duration-150: 150ms;
+  --duration-220: 220ms;
+
+  /* Buttons - sizes */
+  --btn-big-height: 48px;     /* approx */
+  --btn-mid-height: 40px;     /* approx */
+  --btn-small-height: 32px;   /* approx */
+  --btn-round-height: 32px;   /* approx */
+
+  --btn-big-pad-x: 20px;
+  --btn-mid-pad-x: 16px;
+  --btn-small-pad-x: 12px;
+
+  --btn-icon-16: 16px;
+  --btn-icon-14: 14px;
+}

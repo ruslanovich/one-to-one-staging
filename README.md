@@ -13,12 +13,16 @@ MVP backend for call/presentation processing: API endpoints for uploads + a work
 1) Install deps: `npm install`
 2) Configure env vars (see `.env.example`). Use a local `.env` or `.env.local` file; do not commit secrets.
 
+## Running
+1) Start Next.js dev server: `npm run dev`
+2) Run migrations (requires `psql` and `DATABASE_URL`): `npm run migrate`
+3) Start worker: `npm run worker`
+
 ## Running (examples)
-- Start worker: `npx tsx src/worker/index.ts`
 - Generate upload URL: `npx tsx src/scripts/generateUploadUrl.ts`
 - Enqueue a test job: `npx tsx src/scripts/enqueueTestJob.ts`
 - Poll transcription: `npx tsx src/scripts/pollTranscription.ts`
-- Smoke test pipeline: `npx tsx src/scripts/smokeTestPipeline.ts`
+- Smoke test pipeline: `npm run smoke`
 
 ## Docs
 - Architecture: `ARCHITECTURE.md`

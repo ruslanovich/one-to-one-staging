@@ -3,16 +3,40 @@ import { createPgPool } from "@/db/pgClient";
 import { PostgresJobQueue } from "@/queue/postgresQueue";
 import { enqueueProcessingStages } from "@/api/jobs";
 import { createS3Client } from "@/storage/s3SignedUrl";
-import { completeMultipartUpload } from "@/storage/s3Multipart";
+import { completeMultipartUpload, listMultipartUploadParts } from "@/storage/s3Multipart";
 import { requireEnv } from "@/config/env";
+import { validateUploadInput } from "@/shared/uploadTypes";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
-  const { uploadId, objectKey, parts, orgId, callId, fileName, sizeBytes, mime } = body ?? {};
+  const {
+    uploadId,
+    objectKey,
+    parts,
+    orgId,
+    callId,
+    fileName,
+    sizeBytes,
+    mime,
+    sourceFileName,
+    uploadKind,
+  } = body ?? {};
 
-  if (!uploadId || !objectKey || !Array.isArray(parts) || !orgId || !callId || !fileName) {
+  if (!uploadId || !objectKey || !orgId || !callId || !fileName) {
     return NextResponse.json(
-      { error: "uploadId, objectKey, parts, orgId, callId, fileName are required" },
+      { error: "uploadId, objectKey, orgId, callId, fileName are required" },
+      { status: 400 },
+    );
+  }
+
+  const validation = validateUploadInput({
+    fileName,
+    sourceFileName,
+    sourceKind: uploadKind,
+  });
+  if (!validation.ok) {
+    return NextResponse.json(
+      { error: "unsupported upload file type", details: validation.errors },
       { status: 400 },
     );
   }
@@ -24,14 +48,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     secretAccessKey: requireEnv("YC_STORAGE_SECRET_ACCESS_KEY"),
   });
 
-  await completeMultipartUpload(client, {
-    bucket: requireEnv("YC_STORAGE_BUCKET"),
-    key: objectKey,
-    uploadId,
-    parts: parts.map((part: { partNumber: number; etag: string }) => ({
+  const bucket = requireEnv("YC_STORAGE_BUCKET");
+  let resolvedParts: Array<{ partNumber: number; etag: string }> = [];
+  if (Array.isArray(parts) && parts.length > 0) {
+    resolvedParts = parts.map((part: { partNumber: number; etag: string }) => ({
       partNumber: Number(part.partNumber),
       etag: String(part.etag),
-    })),
+    }));
+  } else {
+    resolvedParts = await listMultipartUploadParts(client, {
+      bucket,
+      key: objectKey,
+      uploadId,
+    });
+  }
+
+  if (resolvedParts.length === 0) {
+    return NextResponse.json({ error: "no uploaded parts found" }, { status: 400 });
+  }
+
+  await completeMultipartUpload(client, {
+    bucket,
+    key: objectKey,
+    uploadId,
+    parts: resolvedParts,
   });
 
   const pool = createPgPool(requireEnv("DATABASE_URL"));
@@ -48,7 +88,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
 
     const queue = new PostgresJobQueue(pool);
-    await enqueueProcessingStages(queue, { orgId, callId, fileName });
+    await enqueueProcessingStages(queue, {
+      orgId,
+      callId,
+      fileName,
+      contentType: mime ?? null,
+    });
 
     return NextResponse.json({ ok: true });
   } finally {

@@ -8,6 +8,7 @@ import { PostgresJobQueue } from "../queue/postgresQueue";
 import { requireEnv } from "../config/env";
 import { S3Storage } from "../storage/s3Storage";
 import { runStage } from "../worker/runStage";
+import { enqueueProcessingStages } from "../api/jobs";
 
 async function ensureFfmpeg(): Promise<void> {
   await new Promise<void>((resolve, reject) => {
@@ -107,15 +108,13 @@ async function main(): Promise<void> {
         [callId, resolvedOrgId, fileName],
       );
 
-      await pool.query(
-        `insert into processing_jobs (org_id, call_id, stage, status, payload)
-         values ($1, $2, 'extract_audio', 'queued', $3),
-                ($1, $2, 'transcribe_start', 'queued', $3)
-         on conflict do nothing`,
-        [resolvedOrgId, callId, { fileName, allowEmptyTranscript: true }],
-      );
-
       const queue = new PostgresJobQueue(pool);
+      await enqueueProcessingStages(queue, {
+        orgId: resolvedOrgId,
+        callId,
+        fileName,
+        contentType: "video/mp4",
+      });
       const deps = {
         storage,
         bucket,
@@ -126,8 +125,8 @@ async function main(): Promise<void> {
           `orgs/${o}/calls/${c}/artifacts/transcript/${c}.json`,
         transcriptAudioPath: (o: string, c: string) =>
           `orgs/${o}/calls/${c}/artifacts/transcript/${c}.ogg`,
-        analysisPath: (o: string, c: string) =>
-          `orgs/${o}/calls/${c}/artifacts/analysis/${c}.json`,
+        analysisPath: (o: string, c: string, analysisId?: string) =>
+          `orgs/${o}/calls/${c}/artifacts/analysis/${analysisId ?? c}.json`,
         enqueueJobAt: queue.enqueueAt?.bind(queue),
         enqueueJob: queue.enqueue.bind(queue),
         onAudioArtifact: async (input: {

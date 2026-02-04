@@ -1,3 +1,4 @@
+import "../config/loadEnv";
 import { hostname } from "node:os";
 import { createPgPool } from "../db/pgClient";
 import { requireEnv } from "../config/env";
@@ -27,6 +28,7 @@ async function main(): Promise<void> {
     storage,
     bucket,
     storageEndpoint: endpoint,
+    db: pool,
     rawPath: (orgId: string, callId: string, fileName: string) =>
       `orgs/${orgId}/calls/${callId}/raw/${fileName}`,
     audioPath: (orgId: string, callId: string) =>
@@ -35,8 +37,8 @@ async function main(): Promise<void> {
       `orgs/${orgId}/calls/${callId}/artifacts/transcript/${callId}.json`,
     transcriptAudioPath: (orgId: string, callId: string) =>
       `orgs/${orgId}/calls/${callId}/artifacts/transcript/${callId}.ogg`,
-    analysisPath: (orgId: string, callId: string) =>
-      `orgs/${orgId}/calls/${callId}/artifacts/analysis/${callId}.json`,
+    analysisPath: (orgId: string, callId: string, analysisId?: string) =>
+      `orgs/${orgId}/calls/${callId}/artifacts/analysis/${analysisId ?? callId}.json`,
     enqueueJobAt: queue.enqueueAt?.bind(queue),
     enqueueJob: queue.enqueue.bind(queue),
     onAudioArtifact: async (input: {
@@ -69,6 +71,26 @@ async function main(): Promise<void> {
       await pool.query(
         `insert into artifacts (org_id, call_id, kind, storage_path, content_type, size_bytes)
          values ($1, $2, 'transcript', $3, $4, $5)
+         on conflict do nothing`,
+        [
+          input.orgId,
+          input.callId,
+          input.storagePath,
+          input.contentType,
+          input.sizeBytes ?? null,
+        ],
+      );
+    },
+    onAnalysisArtifact: async (input: {
+      orgId: string;
+      callId: string;
+      storagePath: string;
+      contentType: string;
+      sizeBytes?: number;
+    }) => {
+      await pool.query(
+        `insert into artifacts (org_id, call_id, kind, storage_path, content_type, size_bytes)
+         values ($1, $2, 'analysis', $3, $4, $5)
          on conflict do nothing`,
         [
           input.orgId,
