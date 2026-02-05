@@ -1,9 +1,3 @@
-Я отвечу как world-class Principal Software Architect по B2B SaaS и распределённым системам, лауреат ACM SIGOPS Mark Weiser Award
-
-Ниже — готовый Project Charter в формате Markdown. Его можно положить в репозиторий как PROJECT_CHARTER.md.
-
-⸻
-
 Project Charter — MVP B2B SaaS (Call/Presentation Analytics)
 
 1. Purpose
